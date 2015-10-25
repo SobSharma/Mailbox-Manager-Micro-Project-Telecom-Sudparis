@@ -1,0 +1,108 @@
+<project name="MicroProject" default="all" basedir=".">
+    <description>
+        A simple build script.
+    </description>
+  <!-- set global properties for this build -->
+  <!-- set glassfish.home to point to glassfish installation  -->  
+  <property environment="env"/>
+  <property name="glassfish.home" value="${env.GLASSFISH_HOME}"/>
+
+  <property name="entity" value="entity"/>
+  <property name="ejb" value="ejb"/>
+  <property name="client" value="client"/>
+
+  <target name="init">
+    <!-- Create the build directory structure -->
+        
+  </target>
+
+  <target name="all">
+    <antcall target="clean"/>
+    <antcall target="build"/>
+    <antcall target="deploy"/>
+  </target>
+
+  <target name="build" description="build" depends="init">
+   <antcall target="build-project-entity"/>    
+   <antcall target="build-directory-ejb"/>
+   <antcall target="build-mailbox-ejb"/>
+   <antcall target="build-directory-client"/>
+   <antcall target="build-mailbox-client"/>
+   <antcall target="build-jar"/>
+  </target>
+
+  <target name="build-project-entity"
+        description="Build entity beans" >
+    <javac classpath="${glassfish.home}/lib/javaee.jar" 
+           srcdir="src/project/entity"
+           destdir="."
+           includes="User.java,Msg.java,NewsGroup.java"/>
+  </target>
+
+ <target name="build-directory-ejb"
+        description="Build ejb jar" >
+    <javac classpath="${glassfish.home}/lib/javaee.jar:./entities.jar" 
+           srcdir="src/directory/ejb"
+           destdir="."
+           includes="DirectoryManager.java,IUserDirectory.java"/>
+  </target>
+
+<target name="build-mailbox-ejb"
+        description="Build ejb jar" >
+    <javac classpath="${glassfish.home}/lib/javaee.jar:./entities.jar" 
+           srcdir="src/mailbox/ejb"
+           destdir="."
+           includes="MailBoxManager.java,IMailBoxManager.java"/>
+  </target>
+
+  <target name="build-directory-client" 
+        description="Build client jar" >
+    <javac classpath="${glassfish.home}/lib/javaee.jar" 
+           srcdir="src/directory/client"
+           destdir="."
+           includes="DirectoryJavaClient.java"/>
+  </target>
+
+<target name="build-mailbox-client" 
+        description="Build client jar" >
+    <javac classpath="${glassfish.home}/lib/javaee.jar" 
+           srcdir="src/mailbox/client"
+           destdir="."
+           includes="MailBoxClient.java"/>
+  </target>
+  
+  <target name="build-jar" 
+        description="Build jar archive" >
+    <jar destfile="MicroProject.jar"
+         basedir="."
+	 includes="META-INF/persistence.xml,directory/,mailbox/,project/"/>
+  </target>
+
+
+  <target name="deploy" 
+          description="deploy">
+    <exec executable="${glassfish.home}/bin/asadmin" 
+          failonerror="true" 
+          vmlauncher="false">
+      <arg line="deploy --retrieve . MicroProject.jar"/>
+    </exec>
+  </target>
+
+  <target name="undeploy" 
+          description="undeploy">
+    <exec executable="${glassfish.home}/bin/asadmin" 
+          failonerror="true" 
+          vmlauncher="false">
+      <arg line="undeploy MicroProject"/>
+    </exec>
+  </target>
+
+  <target name="clean" 
+          description="clean up" >
+    <delete file="MicroProject.jar"/>
+    <delete dir="directory"/>
+    <delete dir="mailbox"/>
+     <delete dir="project"/>
+  </target>
+
+</project>
